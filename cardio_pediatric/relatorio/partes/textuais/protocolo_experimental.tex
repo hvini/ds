@@ -1,0 +1,79 @@
+\section{Protocolo Experimental}
+
+Os dados préviamente pré-processados foram divididos em treino e teste, sendo 80\% para treino e 20\% para teste. A divisão foi realizada de forma estratificada, garantindo que a proporção de classes fosse mantida em ambos os conjuntos. A partição de teste foi mantida separada até o final do experimento, para evitar vazamento de informações. Os valores de entrada para treino foram normalizados utilizando o método \textit{scaler} do \textit{scikit-learn} \cite{kramer2016scikit}, que padroniza os valores para média 0 e desvio padrão 1. A normalização foi realizada para garantir que os modelos não fossem influenciados pela escala dos dados. Para otimização dos hiperparâmetros, foi utilizada a busca em grade \cite{feurer2019hyperparameter} com validação cruzada \cite{browne2000cross} de 5 partiçōes, garantindo que os modelos fossem treinados e validados em diferentes partições dos dados e com diferentes hiperparâmetros. A busca em grade foi realizada para os modelos,  k-vizinhos mais próximos (KNN) \cite{guo2003knn}, naive bayes \cite{webb2010naive}, regressão logistica \cite{lavalley2008logistic}, maquina de suporte de vetores (SVM) \cite{noble2006support} e perceptron multicamadas (MLP) \cite{gardner1998artificial}. Os hiperparâmetros testados para cada modelo foram:
+
+\begin{itemize}
+    \item \textbf{K-Vizinhos mais próximos}
+          \begin{itemize}
+              \item \textit{Número de vizinhos} (3, 5, 7, 9 e 11)
+              \item \textit{Pesos} (uniforme e distância)
+              \item \textit{Métrica de distância} (euclidiana, manhattan e chebyshev)
+          \end{itemize}
+    \item \textbf{Naive bayes}
+          \begin{itemize}
+              \item \textit{Suavizador} (1e9 até 1e-5 com passo de 1e-1)
+          \end{itemize}
+    \item \textbf{Regressão logística}
+          \begin{itemize}
+              \item \textit{C} (0,1, 1, 10 e 100)
+              \item \textit{Tol} (1e-4 até 1e-2 com passo de 1e-1)
+          \end{itemize}
+    \item \textbf{SVM}
+          \begin{itemize}
+              \item \textit{Kernel} (rbf, poly e sigmoid)
+              \item \textit{C} (0,1, 1 e 10)
+          \end{itemize}
+    \item \textbf{MLP}
+          \begin{itemize}
+              \item \textit{Alpha} (0,1, 0,01 e 0,0001)
+              \item \textit{Função de ativação} (relu e tanh)
+              \item \textit{Solver} (adam e sgd)
+              \item \textit{Tamanho da camada oculta} (100, 50, 25 e 10)
+          \end{itemize}
+\end{itemize}
+
+O melhor estimador encontrado pela busca em grade, para cada modelo testado, foi avaliado utilizando a partição de teste. A avaliação foi realizada utilizando as métricas de sensibilidade e especificidade, que indicam a performance dos métodos para identificar quem realmente tem/não tem patologias cardíacas, alem da área de baixo da curva (AUC). O fluxograma do protocolo experimental pode ser visualizado na Figura~\ref{fig:protocolo}.
+
+\begin{figure}[!t]
+    \centering
+    \begin{tikzpicture}[
+            node distance=1cm and 0.8cm,
+            block/.style={
+                    rectangle, draw, rounded corners, fill=gray!30,
+                    minimum width=2.5cm, minimum height=0.7cm, align=center, inner sep=2pt
+                },
+            process/.style={
+                    rectangle, draw, fill=blue!30,
+                    minimum width=2.5cm, minimum height=0.7cm, align=center, inner sep=2pt
+                },
+            data/.style={
+                    ellipse, draw, fill=green!30,
+                    minimum width=2.2cm, minimum height=0.7cm, align=center, inner sep=2pt
+                },
+            arrow/.style={
+                    -Latex, thick
+                },
+            every node/.style={font=\footnotesize}
+        ]
+
+        \node (split) [process] {Dados pré-processados};
+        \node (train) [data, below left=of split] {Treino};
+        \node (test) [data, below right=of split] {Teste};
+        \node (scaletrain) [process, below=of train] {Normalização (Scaler Fit)};
+        \node (scaletest) [process, below=of test] {Normalização (Scaler Transform)};
+        \node (grid) [block, below=1.2cm of scaletrain] {Busca em grade: \\ Validação Cruzada 5 partições};
+        \node (finaleval) [process, below=1.2cm of scaletest] {Predição e Avaliação};
+
+        \draw [arrow] (split) -- (train);
+        \draw [arrow] (split) -- (test);
+        \draw [arrow] (train) -- (scaletrain);
+        \draw [arrow] (scaletrain) -- (grid);
+        \draw [arrow] (test) -- (scaletest);
+        \draw [arrow] (scaletest) -- (finaleval);
+        \draw [arrow] (grid) -- (finaleval);
+
+    \end{tikzpicture}
+    \caption{Fluxograma do protocolo experimental}
+    \label{fig:protocolo}
+\end{figure}
+

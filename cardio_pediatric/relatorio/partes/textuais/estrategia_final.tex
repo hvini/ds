@@ -1,0 +1,19 @@
+\section{Estratégia Final}
+
+Para a avaliação em ambiente de produção, os modelos foram treinados com o conjunto de dados completo, sem a divisão entre treino e teste. A predição foi feita no conjunto não rotulado (3146 observações), pré-processado utilizando os mesmo critérios da base de treino. Um arquivo CSV foi gerado com as predições, e em seguida foi submetido à competição \cite{ufscar-am-2024-projeto-final}. Os resultados obtidos na competição estão na Tabela \ref{table:competition}. Os resultados foram calculados com aproximadamente 50\% dos dados de teste.
+
+\begin{table}[!t]
+    \renewcommand{\arraystretch}{1.3}
+    \caption{Resultados na classificação publica da competição.}
+    \label{table:competition}
+    \centering
+    \begin{tabular}{|c||c|}
+        \hline
+        \textbf{Método}                        & \textbf{AUC} \\ \hline
+        \textbf{K-vizinhos}                    & 0,9385       \\ \hline
+        \textbf{Naive Bayes}                   & 0,9270       \\ \hline
+        \textbf{Regressão Logistica}           & 0,9383       \\ \hline
+        \textbf{Máquina de Suporte de Vetores} & 0,9195       \\ \hline
+        \textbf{Perceptron Multicamadas}       & 0,9412       \\ \hline
+    \end{tabular}
+\end{table}

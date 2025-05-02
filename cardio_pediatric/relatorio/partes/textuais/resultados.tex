@@ -1,0 +1,25 @@
+\section{Resultados}
+
+Na Tabela~\ref{table:results} são apresentados os resultados obtidos para os modelos de classificação.
+
+\begin{table*}[!t]
+    \renewcommand{\arraystretch}{1.3}
+    \caption{Resultados dos modelos de classificação.}
+    \label{table:results}
+    \centering
+    \begin{tabular}{|c||c||c||c|}
+        \hline
+        \textbf{Método}                        & \textbf{Sensibilidade} & \textbf{Especificidade} & \textbf{AUC} \\ \hline
+        \textbf{K-vizinhos}                    & 0,9188                 & 0,9515                  & 0,9358       \\ \hline
+        \textbf{Naive Bayes}                   & 0,9202                 & 0,9549                  & 0,9299       \\ \hline
+        \textbf{Regressão Logistica}           & 0,9168                 & 0,9591                  & 0,9440       \\ \hline
+        \textbf{Máquina de Suporte de Vetores} & 0,9197                 & 0,9571                  & 0,9374       \\ \hline
+        \textbf{Perceptron Multicamadas}       & 0,9179                 & 0,9580                  & 0,9490       \\ \hline
+    \end{tabular}
+\end{table*}
+
+O modelo \textit{Perceptron Multicamada} obteve o melhor resultado, com um AUC de 0,9490, e de modo geral, os modelos apresentaram maior especificidade do que sensibilidade, o que indica que eles tiveram uma maior capacidade de identificar corretamente os casos negativos do que os positivos.
+
+A diferença entre especificidade e sensibilidade se deu principalmente por um desbalanceamento entre as classes, entretanto, essa diferença não foi expressiva o suficiente para prejudicar a capacidade de classificação dos modelos.
+
+Embora o modelo \textit{Perceptron Multicamada} tenha alcançado o melhor resultado, a diferença entre os modelos foi pequena, com uma variação de no máximo 0,0191. A semelhança nos resultados pode ser explicada pelo pré-processamento aplicado á base de dados. Parte dos atributos foi gerado por meio do método \textit{One-Hot Encoding}, que criou um novo atributo binário para cada categoria do atributo alvo, simplificando o problema e permitindo que até modelos mais simples obtivessem bons resultados.

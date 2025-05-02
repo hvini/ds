@@ -1,0 +1,79 @@
+\section{Dados e Pré-processamento}
+
+A base utilizada foi coletada originalmente no Real Hospital Português (RHP), localizado no brasil, e faz parte de uma parceria com a Universidade do Porto, em Portugal. No total são 17.873 pacientes pediátricos, com e sem patologias cardíacas, sendo 14.727 rotulados entre as classes normal (sem patologia) e anormal (com patologia) e 3.146 não rotulados. A base possui 19 atributos continuos e categoricos (Tabela~\ref{table:features}) que representam informações demograficas e clinicas do paciente.
+
+Inicialmente foram tratados os valores contínuos nas observações rotuladas. Os atributos \textit{Idade} e \textit{FC} foram previamente convertidos de objeto para contínuo, e, em seguida foi realizada uma análise dos valores médios, desvio padrão e quartis para cada atributo.
+
+A análise de distribuição revelou valores extremos como \textit{Peso} negativo, \textit{Idade} negativa, zero ou superior à faixa etária pediátrica, que, de acordo com a \textit{Academia Americana de Pediatria}, é de 22 anos \cite{hardin_age_2017}. Também foram encontrados \textit{IMC} igual a zero ou acima dos valores saudáveis, incluindo o valor máximo observado de 105,3 kg/m² para um adulto de 41 anos \cite{morales2010obesidad}, além de \textit{PA Sistólica} e \textit{FC} com valores extremamente elevados, sendo acima dos limites já vistos de 360 mmHg e 480 bpm \cite{narloch_influence_1995, chhabra_mouse_2012}, respectivamente.
+
+Além dos valores extremos, foram identificados valores faltantes em praticamente todos os atributos da base. Para minimizar a inserção de viés nos dados, foram analisados 3 métodos de imputação de valores faltantes, sendo esses: imputação por mediana \cite{berkelmans2022population}, k-vizinhos mais próximos \cite{malarvizhi2012k} e imputação múltipla com equações encadeadas (MICE) \cite{zhang2016multiple}, com o estimador de regressão linear bayesiana.
+
+Para a avaliação dos métodos, foi criada uma base de dados de referência, composta pelas observações rotuladas que apresentavam até 30\% de dados faltantes (peso, altura, IMC, idade e FC), excluindo os valores extremos e faltantes, totalizando 9.227 observações. Em seguida, uma segunda base foi gerada a partir da base de referência, mas com a inserção aleatória de valores faltantes. Esta base foi então preenchida utilizando os métodos de imputação, sendo a base de referência usada como padrão de comparação.
+
+Dado que os métodos de imputação são sensíveis à escala dos dados, a normalização (z-score) foi aplicada, garantindo uma média de 0 e desvio padrão de 1. Para avaliar a performance dos métodos, foram utilizadas as métricas de erro absoluto médio (MAE), erro quadrático médio (RMSE) e coeficiente de determinação (R²). O método MICE apresentou os melhores resultados, com MAE de 0.12, RMSE de 0.30 e R² de 0.90 (Tabela~\ref{table:imputation}), e foi, portanto, escolhido para imputação dos valores faltantes nas observações rotuladas.
+
+Ao preencher atributos com mais de 30\% de valores faltantes, foi observada uma queda nos resultados, chegando a atingir um MAE de 0.17, RMSE 0.39 e R² 0.84 para o método MICE. Como resultado, foi decidido remover os atributos \textit{PA Sistólica} e \textit{PA Diastólica}, que apresentavam uma quantidade de dados faltantes superior a 30\%.
+
+Após preencher os valores contínuos faltantes, foram analisados os valores categóricos, onde foi observado que o atributo \textit{HDA 2} continha mais de 90\% dos dados faltantes, e por esse motivo foi removido da base. Outros atributos com valores faltantes foram preenchidos com uma categoria própria chamada \textit{Outros}, dessa forma, evita-se categorizar de forma errada e os modelos conseguem aprender com essas observações específicas.
+
+A análise de categorias únicas de cada atributo revelou que alguns atributos possuíam categorias repetidas, como o atributo \textit{Sexo}, que continha as categorias \textit{Feminino} e \textit{feminino}, e o atributo \textit{Classe}, que continha as categorias \textit{Normal} e \textit{Normais}. Categorias repetidas foram agrupadas em uma única categoria. Atributos com categorias desbalanceadas foram agrupados em categorias semelhantes, resultando em:
+
+\begin{itemize}
+    \item \textbf{HDA 1}: Assintomático, Sintomas Cardíacos e Sintomas Gerais
+    \item \textbf{Pulsos}: Normais e Alterados
+    \item \textbf{B2}: Normal e Alterado
+    \item \textbf{Sopro}: Sistólico, Contínuo, Diastólico
+    \item \textbf{Motivo 1}: Condição Cardíaca, Check-Up e Outro
+    \item \textbf{PPA}: Normal, Não Calculado, Pré-hipertensão, Hipertensão e Outro
+\end{itemize}
+
+O agrupamento se deu devido a necessidade de normalizar os dados categoricos para númericos, por conta dos modelos testados serem mais eficientes com dados númericos.
+
+Para a normalização dos dados foi decidido utilizar a técnica de \textit{One-Hot Encoding} \cite{poslavskaya2023encoding}, que cria uma nova coluna para cada categoria, sendo assim, os modelos não assumem que as categorias são ordinais, isto é, que possuem uma hierarquia, ou que um valor é maior que o outro, por exemplo, em \textit{Sexo}, \textit{Feminino} ser maior que \textit{Masculino}.
+
+Por fim valores que não contribuem para a detecção de patologias cardiacas como \textit{Altura}, \textit{Atendimento}, \textit{DN} e \textit{Convênio} foram removidos. O resultado final foi uma base com 31 colunas (incluindo identificador único e classe) e 11.784 observações.
+
+
+\begin{table}[!t]
+    \renewcommand{\arraystretch}{1.3}
+    \caption{Atributos da base de dados.}
+    \label{table:features}
+    \centering
+    \begin{tabular}{|c||c|}
+        \hline
+        \textbf{Campo}         & \textbf{Descrição}          \\ \hline
+        \textbf{ID}            & Identificador único         \\ \hline
+        \textbf{Peso}          & Peso                        \\ \hline
+        \textbf{Altura}        & Altura                      \\ \hline
+        \textbf{IMC}           & Índice de Massa Corporal    \\ \hline
+        \textbf{Idade}         & Idade                       \\ \hline
+        \textbf{Sexo}          & Gênero                      \\ \hline
+        \textbf{Atendimento}   & Data do atendimento         \\ \hline
+        \textbf{DN}            & Data de nascimento          \\ \hline
+        \textbf{Convênio}      & Convênio                    \\ \hline
+        \textbf{Pulsos}        & Pulso                       \\ \hline
+        \textbf{PA Sistólica}  & Pressão arterial sistólica  \\ \hline
+        \textbf{PA Diastólica} & Pressão arterial diastólica \\ \hline
+        \textbf{PPA}           & Pressão de Pulso Arterial   \\ \hline
+        \textbf{B2}            & Segunda bulha (diastólica)  \\ \hline
+        \textbf{Sopro}         & Sopro Cardíaco              \\ \hline
+        \textbf{FC}            & Frequência cardíaca.        \\ \hline
+        \textbf{HDA 1 e 2}     & História de doença atual    \\ \hline
+        \textbf{Motivo 1 e 2}  & Motivo da consulta          \\ \hline
+        \textbf{Classe}        & Classe                      \\ \hline
+    \end{tabular}
+\end{table}
+
+\begin{table}[!t]
+    \renewcommand{\arraystretch}{1.3}
+    \caption{Avaliação dos métodos de imputação de valores faltantes.}
+    \label{table:imputation}
+    \centering
+    \begin{tabular}{|c||c||c||c|}
+        \hline
+        \textbf{Método}     & \textbf{MAE} & \textbf{RMSE} & \textbf{R2} \\ \hline
+        \textbf{Mediana}    & 0.23         & 0.55          & 0.70        \\ \hline
+        \textbf{K-vizinhos} & 0.20         & 0.48          & 0.76        \\ \hline
+        \textbf{MICE}       & 0.12         & 0.30          & 0.90        \\ \hline
+    \end{tabular}
+\end{table}
